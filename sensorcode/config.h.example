@@ -1,2 +1,13 @@
+//wifi things
 #define SSID "your-ssid"
 #define PSK "your-psk"
+
+//sensor things
+#define DHTPIN D4      // Pin connected to the DHT11 sensor
+#define DHTTYPE DHT11  // DHT 11
+const unsigned long interval = 5000;
+
+//mqtt things
+#define MQTT_HOST "mqtt.host"
+#define MQTT_PORT 1883 //standard is 1883, remember karl marx!
+#define MQTT_TOPIC "your-topic"
