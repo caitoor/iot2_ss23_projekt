@@ -6,7 +6,7 @@
 DHT dht(DHTPIN, DHTTYPE);
 unsigned long previousMillis = 0;
 WiFiClient espClient;
-PubSubClient client(espClient);
+PubSubClient mqttClient(espClient);
 const char* clientId = "esp-faebs";
 
 
@@ -32,17 +32,17 @@ void setup() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
-  client.setServer(MQTT_HOST, MQTT_PORT);
+  mqttClient.setServer(MQTT_HOST, MQTT_PORT);
 }
 
 void loop() {
-  if (!client.connected()) {
+  if (!mqttClient.connected()) {
     Serial.print("Connecting to MQTT broker...");
-    if (client.connect(clientId)) {
+    if (mqttClient.connect(clientId)) {
       Serial.println("connected");
     } else {
       Serial.print("failed, rc=");
-      Serial.print(client.state());
+      Serial.print(mqttClient.state());
       Serial.println(" retrying in 5 seconds");
       delay(5000);
       return;
@@ -51,11 +51,14 @@ void loop() {
 
   unsigned long currentMillis = millis();
 
-  if (currentMillis - previousMillis > interval) {
+  if (currentMillis - previousMillis > INTERVAL) {
 
-    float temperature = dht.readTemperature();  // Read temperature value
+    /* float temperature = dht.readTemperature();  // Read temperature value
     float humidity = dht.readHumidity();        // Read humidity value
+ */
 
+    float temperature = random(2000, 3000) / 100.0;
+    float humidity = random(0, 9500) / 100.0;
     Serial.print("Temperature: ");
     Serial.print(temperature);
     Serial.print(" °C - Humidity: ");
@@ -65,6 +68,6 @@ void loop() {
     previousMillis = currentMillis;
     char temp[6];
     dtostrf(temperature, 4, 2, temp);
-    client.publish(MQTT_TOPIC, temp);
+    mqttClient.publish(MQTT_TOPIC, temp);
   }
 }

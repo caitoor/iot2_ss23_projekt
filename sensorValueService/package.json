@@ -1,0 +1,16 @@
+{
+  "name": "sensorvalueservice",
+  "version": "1.0.0",
+  "description": "gets senesor values and stores them into a database",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "author": "iot2_ss23",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "mqtt": "^4.3.7"
+  }
+}
