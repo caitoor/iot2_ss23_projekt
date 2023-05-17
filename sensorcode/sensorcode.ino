@@ -1,6 +1,7 @@
 #include <DHT.h>
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
 #include "config.h"
 
 DHT dht(DHTPIN, DHTTYPE);
@@ -9,13 +10,15 @@ WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 const char* clientId = "esp-faebs";
 
+char* temperatureTopic = "iot2/temperature";
+char* humidityTopic = "iot2/humidity";
 
 void setup() {
   Serial.begin(115200);
   delay(10);
 
   dht.begin();
-  // Connect to Wi-Fi network
+
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(SSID);
@@ -53,12 +56,9 @@ void loop() {
 
   if (currentMillis - previousMillis > INTERVAL) {
 
-    /* float temperature = dht.readTemperature();  // Read temperature value
-    float humidity = dht.readHumidity();        // Read humidity value
- */
+    float temperature = dht.readTemperature();
+    float humidity = dht.readHumidity();
 
-    float temperature = random(2000, 3000) / 100.0;
-    float humidity = random(0, 9500) / 100.0;
     Serial.print("Temperature: ");
     Serial.print(temperature);
     Serial.print(" °C - Humidity: ");
@@ -66,8 +66,23 @@ void loop() {
     Serial.println(" %");
 
     previousMillis = currentMillis;
-    char temp[6];
-    dtostrf(temperature, 4, 2, temp);
-    mqttClient.publish(MQTT_TOPIC, temp);
+
+    String mac = WiFi.macAddress();
+    Serial.print("Mac:");
+    Serial.println(mac);
+
+    StaticJsonDocument<200> jsonDocTemp;
+    jsonDocTemp["mac"] = mac;
+    jsonDocTemp["value"] = temperature;
+    char bufferTemp[100];
+    serializeJson(jsonDocTemp, bufferTemp);
+    mqttClient.publish(temperatureTopic, bufferTemp);
+
+    StaticJsonDocument<200> jsonDocHum;
+    jsonDocHum["mac"] = mac;
+    jsonDocHum["value"] = humidity;
+    char bufferHum[100];
+    serializeJson(jsonDocHum, bufferHum);
+    mqttClient.publish(humidityTopic, bufferHum);
   }
 }
