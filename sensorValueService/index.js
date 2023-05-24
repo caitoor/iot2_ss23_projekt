@@ -7,8 +7,6 @@ const mqttClientId = "sensorvalueservice-faebs-" + uuid.v4();
 const mqttClient = mqtt.connect(process.env.MQTT_HOST, { clientId: mqttClientId });
 const topic = process.env.MQTT_TOPIC;
 
-let dbReady = false;
-
 mqttClient.on('connect', function () {
     console.log('Connected to MQTT broker!');
     mqttClient.subscribe(topic, function (err) {
@@ -24,7 +22,7 @@ mqttClient.on('message', function (topic, message) {
     console.log('Message received:', message.toString());
     let msg = JSON.parse(message);
     msg.createdAt = new Date();
-    if (dbReady) {
+    if (temperatureCollection) {
         temperatureCollection.insertOne(msg);
     }
 });
@@ -47,7 +45,6 @@ async function dbRun() {
     temperatureCollection = await db.collection("temperatureValues");
     console.log("connected to db");
     deleteAllDocuments(temperatureCollection); // DELETE THIS!!
-    dbReady = true;
 }
 dbRun().catch(console.dir);
 
@@ -73,18 +70,33 @@ app.get('/', (req, res) => {
     res.status(200).send('Welcome to the joyful DP2 sensorvalue service API!');
 });
 
-app.get('/api/temperature/current', (req, res) => {
+app.get('/api/temperature/current', async (req, res) => {
+    const latestTemp = await getTemperatureValues(1)[0];
+    res.status(200).send(latestTemp);
+});
+
+app.get('/api/temperature/maximum', async (req, res) => {
     res.send('Hello World!');
 });
 
-app.get('/api/temperature/maximum', (req, res) => {
+app.get('/api/temperature/minimum', async (req, res) => {
     res.send('Hello World!');
 });
 
-app.get('/api/temperature/minimum', (req, res) => {
-    res.send('Hello World!');
+app.get('/api/temperature/latest/:n', async (req, res) => {
+    const count = parseInt(req.params.n);
+    const latestTemp = await getTemperatureValues(count);
+    res.status(200).send(latestTemp);
 });
 
-app.get('/api/temperature/latest/:n', (req, res) => {
-    res.send('Hello World!');
-});
+async function getTemperatureValues(count) {
+    let temps = null;
+    if (temperatureCollection) {
+        temps = await temperatureCollection
+            .find()
+            .sort({ "createdAt": -1 })
+            .limit(count)
+            .toArray();
+    }
+    return temps;
+} 
