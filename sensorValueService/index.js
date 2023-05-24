@@ -1,9 +1,13 @@
 require('dotenv').config();
 const uuid = require('uuid');
 const mqtt = require('mqtt');
+const express = require('express');
+
 const mqttClientId = "sensorvalueservice-faebs-" + uuid.v4();
 const mqttClient = mqtt.connect(process.env.MQTT_HOST, { clientId: mqttClientId });
 const topic = process.env.MQTT_TOPIC;
+
+let dbReady = false;
 
 mqttClient.on('connect', function () {
     console.log('Connected to MQTT broker!');
@@ -20,7 +24,9 @@ mqttClient.on('message', function (topic, message) {
     console.log('Message received:', message.toString());
     let msg = JSON.parse(message);
     msg.createdAt = new Date();
-    temperatureCollection.insertOne(msg);
+    if (dbReady) {
+        temperatureCollection.insertOne(msg);
+    }
 });
 
 
@@ -40,7 +46,8 @@ async function dbRun() {
     db = await dbClient.db(process.env.DB_DATABASE);
     temperatureCollection = await db.collection("temperatureValues");
     console.log("connected to db");
-    deleteAllDocuments(temperatureCollection) // DELETE THIS!!
+    deleteAllDocuments(temperatureCollection); // DELETE THIS!!
+    dbReady = true;
 }
 dbRun().catch(console.dir);
 
@@ -48,4 +55,36 @@ dbRun().catch(console.dir);
 async function deleteAllDocuments(collection) {
     const result = await collection.deleteMany({});
     console.log(`${result.deletedCount} Dokumente wurden gelöscht.`);
-  }
+}
+
+
+/*********
+ * API
+ *********/
+
+const app = express();
+const port = process.env.API_PORT;
+
+app.listen(port, () => {
+    console.log(`sensorValueService running on port ${port}`);
+});
+
+app.get('/', (req, res) => {
+    res.status(200).send('Welcome to the joyful DP2 sensorvalue service API!');
+});
+
+app.get('/api/temperature/current', (req, res) => {
+    res.send('Hello World!');
+});
+
+app.get('/api/temperature/maximum', (req, res) => {
+    res.send('Hello World!');
+});
+
+app.get('/api/temperature/minimum', (req, res) => {
+    res.send('Hello World!');
+});
+
+app.get('/api/temperature/latest/:n', (req, res) => {
+    res.send('Hello World!');
+});
