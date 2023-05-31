@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import axios from 'axios'; // Import Axios
 
 const Home = () => {
     const [username, setUsername] = useState('');
@@ -7,20 +8,21 @@ const Home = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
 
-        const response = await fetch('http://localhost:3001/api/register', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ username, password }),
-        });
+        try {
+            const response = await axios.post('http://localhost:3001/api/register', {
+                username,
+                password
+            });
 
-        if (response.ok) {
-            console.log('Registration successful');
-            setUsername('');
-            setPassword('');
-        } else {
-            console.log('Registration failed');
+            if (response.status === 200) {
+                console.log('Registration successful');
+                setUsername('');
+                setPassword('');
+            } else {
+                console.log('Registration failed');
+            }
+        } catch (error) {
+            console.error('Registration failed:', error);
         }
     };
 
