@@ -16,6 +16,7 @@ Die Abgabe des Projekts erfolgt in den beiden Fächern Technische Grundlagen 2 u
 - Nutzung von .env oder Ähnlichem, um Credentials auf github zu verbergen.
 - Ausformuliertes Datenmodell inkl. Entity-Relationship-Model
 - github Monorepo
+- .gitignore, in der node_modules enthalten ist. Hochgeladener node_modules-Ordner = Schelle.
 - Projekt-Doku als README.md
 - Screencast (in Google Drive, nicht im Repo!)
 
@@ -65,7 +66,8 @@ Von der 4,0 zur 1,0 dann relevant:
 - the smarter, the better (Konzept, Komplexität)
 
 **Hinweis:** Anwesenheit, Mitarbeit und Beiträge im Kurs (Quantität und Qualität) sind mit 30% der Gesamtnote gewichtet.
-**Tipp: **Macht irgendwo eine übersichtliche Dokumentationsseite, in der ihr eure Must / SHould / Could Haves auflistet, damit ich nichts übersehe.
+
+**Tipp:** Macht irgendwo eine übersichtliche Dokumentationsseite, in der ihr eure Must / Should / Could Haves auflistet, damit ich nichts übersehe.
 
 ## Themenideen
 

@@ -42,13 +42,14 @@ const dbClient = new MongoClient(dbUri, {
         deprecationErrors: true,
     }
 });
+
 let db, userCollection;
 async function dbRun() {
     await dbClient.connect();
     db = await dbClient.db(process.env.DB_DATABASE);
     userCollection = await db.collection("users");
     console.log("connected to db");
-    deleteAllDocuments(userCollection); // DELETE THIS!!
+    // deleteAllDocuments(userCollection); // DELETE THIS!!
 }
 dbRun().catch(console.dir);
 
@@ -124,6 +125,35 @@ app.post('/api/register', async (req, res) => {
         res.status(500).send("Error connecting to database.");
     }
 });
+
+app.post('/api/login', async (req, res) => {
+    if (userCollection) {
+        const username = req.body.username;
+        const password = req.body.password;
+
+        const user = await userCollection.findOne({ "username": username });
+        if (user) {
+            // check password
+            const isValidPassword = await bcrypt.compare(password + pepper, user.password);
+            if (isValidPassword) {
+                console.log(`User ${username} successfully logged in.`);
+                res.status(200).send("Login successful");
+            }
+            else {
+                console.log("Invalid password.");
+                res.status(401).send("Invalid password.");
+            }
+        }
+        else {
+            console.log("No user found with that username.");
+            res.status(404).send("No user found with that username.");
+        }
+    }
+    else {
+        res.status(500).send("Error connecting to database.");
+    }
+});
+
 
 async function saveDocument(msg) {
     msg.createdAt = new Date();
